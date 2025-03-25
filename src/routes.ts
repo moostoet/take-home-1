@@ -1,5 +1,5 @@
-import { HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "@effect/platform";
-import { Effect, pipe, Schema } from "effect";
+import { HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpMiddleware } from "@effect/platform";
+import { Effect, Layer, pipe, Schema } from "effect";
 import { bookingSchema, Id } from "./schemas";
 import { mockBookingWithNote } from "./test/mock";
 
