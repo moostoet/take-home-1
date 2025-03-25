@@ -4,7 +4,6 @@
   "description": "Take home assignment for Full-Stack Software Engineer role (2025)",
   "main": "src/main.ts",
   "scripts": {
-    "dev": "node --experimental-strip-types --watch src/main.ts",
     "start": "npm run build:live",
     "build": "tsc -p .",
     "build:live": "npx tsx --env-file=.env src/main.ts"
