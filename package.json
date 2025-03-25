@@ -4,6 +4,7 @@
   "description": "Take home assignment for Full-Stack Software Engineer role (2025)",
   "main": "src/main.ts",
   "scripts": {
+    "dev": "node --experimental-strip-types --watch src/main.ts",
     "start": "npm run build:live",
     "build": "tsc -p .",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts"
@@ -16,5 +17,11 @@
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.80.1",
+    "@effect/platform-node": "^0.76.4",
+    "@effect/sql-libsql": "^0.23.1",
+    "effect": "^3.14.1"
   }
 }
