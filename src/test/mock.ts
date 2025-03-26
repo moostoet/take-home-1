@@ -1,6 +1,3 @@
-import { Brand } from "effect";
-
-
 import * as Booking from "../booking/type";
 
 export const mockBookingWithNote: Booking.Booking = {

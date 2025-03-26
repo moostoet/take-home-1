@@ -1,7 +1,6 @@
-import { Brand, Data, pipe, Option, Schema } from "effect";
-import { Simplify } from "effect/Types";
+import { Brand, Schema } from "effect";
 import { StoredBooking } from "./table";
-import { omit } from "ramda";
+
 
 const bookingStatus = Schema.Literal("PENDING", "APPROVED", "DENIED", "CANCELLED")
 

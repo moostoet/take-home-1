@@ -18,6 +18,8 @@ const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
   Layer.provide(HttpApiScalar.layer()),
   Layer.provide(DatabaseLive),
   Layer.provide(BookingAPILive),
+  // Add the Bookings.Live somewhere here...
+  Layer.provide(Layer.unwrapEffect(Bookings.Live)),
   HttpServer.withLogAddress,
   Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 }))
 )
