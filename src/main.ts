@@ -5,10 +5,11 @@ import {
   HttpServer
 } from "@effect/platform"
 import { NodeHttpServer, NodeRuntime } from "@effect/platform-node"
-import { Layer, Logger, LogLevel } from "effect"
+import { Effect, Layer, Logger, LogLevel } from "effect"
 import { createServer } from "node:http"
 import { DatabaseLive } from "./database/service.js"
 import { BookingAPI, BookingsLive } from "./routes.js"
+import { Bookings } from "./booking/service.js"
 
 const BookingAPILive = HttpApiBuilder.api(BookingAPI).pipe(Layer.provide(BookingsLive))
 
