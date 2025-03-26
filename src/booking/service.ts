@@ -23,21 +23,3 @@ export class Bookings extends Context.Tag('Service/Bookings')<
         }))
     )
 }
-
-// export class Bookings extends Context.Tag('Service/Bookings')<
-//     Bookings,
-//     {
-//         list: Effect.Effect<Booking.Booking[], DatabaseError>
-//     }
-// >() { }
-
-// export const BookingsLive = Layer.effect(
-//     Bookings,
-//     Bookings.of({
-//         list: pipe(
-//             Ops.list,
-//             Effect.provideService(Database, db),
-//             Effect.map(Array.map(Booking.decodeStored))
-//         )
-//     })
-// )

@@ -6,7 +6,10 @@
   "scripts": {
     "start": "npm run build:live",
     "build": "tsc -p .",
-    "build:live": "npx tsx --env-file=.env src/main.ts"
+    "build:live": "npx tsx --env-file=.env src/main.ts",
+    "migrate:generate": "drizzle-kit generate",
+    "migrate:push": "drizzle-kit push",
+    "nuke": "rimraf booking_db.db && pnpm migrate:push"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +27,7 @@
     "@effect/sql-drizzle": "^0.32.1",
     "@effect/sql-libsql": "^0.23.1",
     "@libsql/client": "^0.15.1",
+    "drizzle-kit": "^0.30.5",
     "drizzle-orm": "^0.41.0",
     "effect": "^3.14.1",
     "ramda": "^0.30.1",

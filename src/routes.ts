@@ -1,5 +1,5 @@
 import { HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema, HttpMiddleware } from "@effect/platform";
-import { Effect, Layer, pipe, Schema } from "effect";
+import { Effect, pipe, Schema, Console } from "effect";
 import { Booking, Id } from "./booking/type";
 import { mockBookingWithNote } from "./test/mock";
 import { Bookings } from "./booking/service";
@@ -17,7 +17,7 @@ export const BookingAPI = pipe(
         HttpApiGroup.make("bookings")
             .add(
                 HttpApiEndpoint.get("getBookings", "/bookings").addSuccess(Schema.Array(Booking))
-                .addError(HttpApiError.InternalServerError)
+                    .addError(HttpApiError.InternalServerError)
             )
             .add(
                 HttpApiEndpoint.get("getBookingById", "/bookings/:id").setPath(
@@ -42,27 +42,30 @@ export const BookingAPI = pipe(
     )
 )
 
-export const BookingsLive =
+export const BookingLive =
     HttpApiBuilder.group(BookingAPI, "bookings", (handlers) =>
         handlers
-            /* Consider adding some annotation here for easier reading */
+            /* GET - Get all bookings */
             .handle("getBookings", (req) => Bookings.pipe(
                 Effect.flatMap(bookings => bookings.list),
+                Effect.tapError(Console.debug),
                 Effect.catchTag('DatabaseError', (err) =>
                     Effect.fail(createInternalServerError())
                 )
             ))
 
-            /* Get single booking */
+            /* GET - Get single booking */
             .handle("getBookingById", (req) =>
                 Effect.succeed(mockBookingWithNote))
 
-            /* Submit to my w- */
+            /* POST - Submit a single booking */
             .handle("submitBooking", (req) =>
                 Effect.succeed(mockBookingWithNote))
 
+            /* POST - Approve a single booking */
             .handle("approveBooking", (req) =>
                 Effect.succeed(mockBookingWithNote))
 
+            /* DELETE - Delete a single booking */
             .handle("deleteBooking", (req) => Effect.succeed('OK'))
     )

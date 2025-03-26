@@ -14,7 +14,7 @@ export class IdGenerator extends Context.Tag('IdGenerator')<
         next: Effect.Effect<string, IdError>
     }
 >() {
-    static Live = () => {
+    static Live = Effect.gen(function* () {
         const next = monotonicFactory()
 
         return IdGenerator.of({
@@ -23,7 +23,7 @@ export class IdGenerator extends Context.Tag('IdGenerator')<
                 catch: cause => createIdError('Id generation failed', { cause }),
             }),
         })
-    }
+    })
 
     static getWithDb = pipe(
         IdGenerator,
@@ -38,3 +38,4 @@ export class IdGenerator extends Context.Tag('IdGenerator')<
         ))])),
     )
 }
+
