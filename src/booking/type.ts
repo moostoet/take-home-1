@@ -2,7 +2,9 @@ import { Brand, Schema } from "effect";
 import { StoredBooking } from "./table";
 
 
-const bookingStatus = Schema.Literal("PENDING", "APPROVED", "DENIED", "CANCELLED")
+export const bookingStatus = Schema.Literal("PENDING", "APPROVED", "DENIED", "CANCELLED")
+
+export type bookingStatus = typeof bookingStatus.Type;
 
 export const Id = Schema.String.pipe(Schema.brand("Id"));
 
@@ -11,6 +13,9 @@ export type Id = typeof Id.Type;
 export const ISO8601DateTime = Schema.String.pipe(Schema.brand("ISO8601DateTime"));
 
 export type ISO8601DateTime = typeof ISO8601DateTime.Type;
+
+export const id = Brand.nominal<Id>();
+export const dateTime = Brand.nominal<ISO8601DateTime>();
 
 export const Booking = Schema.Struct({
     id: Id,
@@ -48,10 +53,11 @@ export const storedBookingSchema = Schema.Struct({
     requestNote: Schema.NullOr(Schema.String),
 })
 
-export const id = Brand.nominal<Id>();
-export const dateTime = Brand.nominal<ISO8601DateTime>();
-
 export type Booking = Schema.Schema.Type<typeof Booking>;
+
+export const BookingRequest = Booking.omit("id", "createdAt", "updatedAt", "status");
+
+export type BookingRequest = Schema.Schema.Type<typeof BookingRequest>;
 
 export type StoredBookingSchema = Schema.Schema.Type<typeof storedBookingSchema>;
 
@@ -96,14 +102,6 @@ const bookingFromStoredBooking = Schema.transform(
         }),
     }
 )
-
-// export type Booking = Simplify<{
-//     _tag: 'booking'
-// } & BookingValue>
-
-// export const Booking = Data.tagged<Booking>('booking');
-
-// export const of = Booking;
 
 export const decodeStored: (b: StoredBooking) => Booking = (b) => Schema.decodeUnknownSync(bookingFromStoredBooking)(b)
 

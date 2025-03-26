@@ -1,7 +1,8 @@
+import { Schema } from 'effect';
 import * as F from '../lib/functions'
 
-export class HttpApiError extends Error {
-    readonly _tag = 'HttpApiError'
+export class BookingNotFoundError extends Error {
+    readonly _tag = 'BookingNotFoundError'
 }
 
-export const createHttpApiError = F.create(HttpApiError);
+export const createBookingNotFoundError = F.create(BookingNotFoundError);

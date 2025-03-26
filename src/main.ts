@@ -8,7 +8,7 @@ import { NodeHttpServer, NodeRuntime } from "@effect/platform-node"
 import { Effect, Layer, Logger, LogLevel } from "effect"
 import { createServer } from "node:http"
 import { DatabaseLive } from "./database/service.js"
-import { BookingAPI, BookingLive } from "./routes.js"
+import { BookingAPI, BookingLive } from "./booking/routes.js"
 import { Bookings } from "./booking/service.js"
 import { IdGenerator } from "./database/ids.js"
 
@@ -18,7 +18,7 @@ const BookingAPILive = HttpApiBuilder.api(BookingAPI).pipe(Layer.provide(Booking
 const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
   Layer.provide(HttpApiScalar.layer()),
   Layer.provide(BookingAPILive),
-  Layer.provide(Layer.effect(Bookings, Bookings.Live)),
+  Layer.provide(Bookings.Live),
   Layer.provide(DatabaseLive),
   Layer.provide(Layer.effect(IdGenerator, IdGenerator.Live)),
   HttpServer.withLogAddress,

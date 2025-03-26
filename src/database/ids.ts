@@ -2,16 +2,18 @@ import { Array, Context, Effect, pipe } from 'effect'
 import { monotonicFactory } from 'ulid'
 import * as F from '../lib/functions'
 import { Database } from './service'
+import { Id, id } from '../booking/type'
 
 export class IdError extends Error {
     readonly _tag = 'IdError'
 }
-const createIdError = F.create(IdError)
+
+export const createIdError = F.create(IdError)
 
 export class IdGenerator extends Context.Tag('IdGenerator')<
     IdGenerator,
     {
-        next: Effect.Effect<string, IdError>
+        next: Effect.Effect<Id, IdError>
     }
 >() {
     static Live = Effect.gen(function* () {
@@ -19,7 +21,7 @@ export class IdGenerator extends Context.Tag('IdGenerator')<
 
         return IdGenerator.of({
             next: Effect.try({
-                try: next,
+                try: () => id(next()),
                 catch: cause => createIdError('Id generation failed', { cause }),
             }),
         })
