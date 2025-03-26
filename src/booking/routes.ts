@@ -41,7 +41,8 @@ export const BookingAPI = pipe(
             .add(
                 HttpApiEndpoint.del("deleteBooking", "/bookings/:id").setPath(
                     idStruct
-                )
+                ).addSuccess(Schema.String)
+                    .addError(HttpApiError.InternalServerError)
             )
     )
 )
@@ -81,9 +82,14 @@ export const BookingLive =
             ))
 
             /* POST - Approve a single booking */
-            .handle("approveBooking", (req) =>
-                Effect.succeed(mockBookingWithNote))
+            .handle("approveBooking", (req) => Effect.succeed(mockBookingWithNote))
 
             /* DELETE - Delete a single booking */
-            .handle("deleteBooking", (req) => Effect.succeed('OK'))
+            .handle("deleteBooking", (req) => Bookings.pipe(
+                Effect.flatMap(bookings => bookings.deleteById(req.path.id)),
+                Effect.catchTag('DatabaseError', () =>
+                    Effect.fail(createInternalServerError())
+                )
+            )
+            )
     )

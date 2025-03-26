@@ -14,6 +14,7 @@ export class Bookings extends Context.Tag('Service/Bookings')<
         list: Effect.Effect<Booking.Booking[], DatabaseError>,
         getById: (id: Booking.Id) => Effect.Effect<Option.Option<Booking.Booking>, DatabaseError>,
         submit: (booking: Booking.BookingRequest) => Effect.Effect<Booking.Booking, DatabaseError>;
+        deleteById: (id: Booking.Id) => Effect.Effect<string, DatabaseError>;
     }
 >() {
     static Live = Layer.effect(
@@ -49,6 +50,14 @@ export class Bookings extends Context.Tag('Service/Bookings')<
                     Effect.map(() => booking),
                 )
 
+                const deleteById = (id: Booking.Id) => pipe(
+                    Effect.tryPromise({
+                        try: () => db.delete(bookingTable).where(eq(bookingTable.id, id)).run(),
+                        catch: cause => createDatabaseError('Booking delete failed', { cause })
+                    }),
+                    Effect.map(() => `Booking ${id} successfully deleted`)
+                )
+
                 return Bookings.of({
                     list: pipe(
                         list,
@@ -66,6 +75,9 @@ export class Bookings extends Context.Tag('Service/Bookings')<
                         Effect.let('status', () => Schema.decodeUnknownSync(Booking.bookingStatus)('PENDING')),
                         Effect.flatMap(submit),
                         Effect.catchTag('IdError', () => Effect.die('Could not generate ULID'))
+                    ),
+                    deleteById: (id: Booking.Id) => pipe(
+                        deleteById(id)
                     )
                 })
             })
