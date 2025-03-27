@@ -11,6 +11,7 @@ import { createNotFoundError } from "./routes";
 import { isConflicting } from "../database/query";
 import { ConflictingBookingError, createConflictingBookingError } from "./error";
 import { NotFound } from "@effect/platform/HttpApiError";
+import { Email } from "../email/service";
 
 /**
  * The bookings service responsible for CRUD operations on the bookings table in SQLite.
@@ -28,8 +29,8 @@ export class Bookings extends Context.Tag('Service/Bookings')<
 >() {
     static Live = Layer.effect(
         Bookings,
-        Effect.all([Database, IdGenerator]).pipe(
-            Effect.map(([db, idGen]) => {
+        Effect.all([Database, IdGenerator, Email]).pipe(
+            Effect.map(([db, idGen, email]) => {
 
                 const list =
                     Effect.tryPromise({
@@ -114,6 +115,7 @@ export class Bookings extends Context.Tag('Service/Bookings')<
                     Effect.flatMap(filterConflictsError),
                     Effect.flatMap(approveBooking),
                     Effect.map(Booking.decodeStored),
+                    Effect.tap(email.sendMail)
                 )
 
                 const deleteById = (id: Booking.Id) => pipe(

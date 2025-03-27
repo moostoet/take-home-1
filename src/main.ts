@@ -11,6 +11,7 @@ import { DatabaseLive } from "./database/service.js"
 import { BookingAPI, BookingLive } from "./booking/routes.js"
 import { Bookings } from "./booking/service.js"
 import { IdGenerator } from "./database/ids.js"
+import { Email } from "./email/service.js"
 
 const BookingAPILive = HttpApiBuilder.api(BookingAPI).pipe(Layer.provide(BookingLive))
 
@@ -25,6 +26,7 @@ const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
   Layer.provide(Bookings.Live),
   Layer.provide(DatabaseLive),
   Layer.provide(Layer.effect(IdGenerator, IdGenerator.Live)),
+  Layer.provide(Email.Test),
   HttpServer.withLogAddress,
   Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 }))
 )
