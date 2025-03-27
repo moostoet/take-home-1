@@ -8,6 +8,14 @@ export class Database extends Context.Tag('Database')<
     LibSQLDatabase
 >() { }
 
+/**
+ * DatabaseLive uses some interesting things here,
+ * like Config.string. Config can automatically
+ * use process/environment variables provided
+ * in e.g. an .env file.
+ * 
+ * This Database Service uses LibSQL together with Drizzle.
+ */
 export const DatabaseLive = Layer.effect(
     Database,
     pipe(

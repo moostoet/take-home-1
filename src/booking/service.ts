@@ -1,19 +1,29 @@
-import { Array, Context, Effect, Layer, Option, pipe, Record, Schema } from "effect";
-import { identity } from "effect/Function"
+import { Array, Console, Context, Effect, Layer, Match, Option, pipe, Schema } from "effect";
 import { createDatabaseError, DatabaseError } from "../database/error";
 import { Database } from "../database/service";
-import { createIdError, IdGenerator } from "../database/ids";
+import { IdGenerator } from "../database/ids";
 
 import * as Booking from './type';
 import { bookingTable } from "./table";
 import { eq } from "drizzle-orm";
+import { always } from "../lib/functions";
+import { createNotFoundError } from "./routes";
+import { isConflicting } from "../database/query";
+import { ConflictingBookingError, createConflictingBookingError } from "./error";
+import { NotFound } from "@effect/platform/HttpApiError";
+
+
+/**
+ * The bookings service responsible for CRUD operations on the bookings table in SQLite.
+ */
 
 export class Bookings extends Context.Tag('Service/Bookings')<
     Bookings,
     {
         list: Effect.Effect<Booking.Booking[], DatabaseError>,
         getById: (id: Booking.Id) => Effect.Effect<Option.Option<Booking.Booking>, DatabaseError>,
-        submit: (booking: Booking.BookingRequest) => Effect.Effect<Booking.Booking, DatabaseError>;
+        submit: (booking: Booking.BookingRequest) => Effect.Effect<Booking.Booking, DatabaseError>,
+        approve: (id: Booking.Id) => Effect.Effect<Booking.Booking, DatabaseError | ConflictingBookingError | NotFound>,
         deleteById: (id: Booking.Id) => Effect.Effect<string, DatabaseError>;
     }
 >() {
@@ -37,17 +47,74 @@ export class Bookings extends Context.Tag('Service/Bookings')<
                     Effect.map(Option.fromNullable)
                 )
 
+                const filterConflictsBase = (result: Booking.Booking) => Effect.tryPromise({
+                    try: () => db.select({
+                        eventStart: bookingTable.eventStart,
+                        eventEnd: bookingTable.eventEnd,
+                        eventLocationId: bookingTable.eventLocationId,
+                        status: bookingTable.status
+                    })
+                        .from(bookingTable)
+                        .where(isConflicting(result)),
+                    catch: cause => createDatabaseError('Could not find conflicts', { cause })
+                })
+
+                const filterConflictsError = (result: Booking.Booking) => pipe(
+                    result,
+                    filterConflictsBase,
+                    Effect.flatMap(conflicts =>
+                        Array.isEmptyArray(conflicts)
+                            ? Effect.succeed(result)
+                            : Effect.fail(createConflictingBookingError())
+                    )
+                )
+
                 const submit = (booking: Booking.Booking) => pipe(
-                    Effect.tryPromise({
-                        try: async () => {
-                            const storedBooking = Booking.encodeStored(booking);
-                            const result = await
-                                db.insert(bookingTable).values(storedBooking).run();
-                            return result;
-                        },
-                        catch: cause => createDatabaseError('Booking submission failed', { cause })
-                    }),
-                    Effect.map(() => booking),
+                    filterConflictsBase(booking),
+                    Effect.map(conflicts => ({
+                        hasConflicts: !Array.isEmptyArray(conflicts),
+                        updatedBooking: conflicts.length > 0
+                            ? { ...booking, status: 'DENIED' as const }
+                            : booking
+                    })),
+                    Effect.flatMap(({ updatedBooking }) =>
+                        Effect.tryPromise({
+                            try: async () => {
+                                const storedBooking = Booking.encodeStored(updatedBooking);
+                                const result = await db.insert(bookingTable).values(storedBooking).run();
+                                return { result, updatedBooking };
+                            },
+                            catch: cause => createDatabaseError('Booking submission failed', { cause })
+                        })
+                    ),
+                    Effect.map(({ updatedBooking }) => updatedBooking)
+                )
+
+                const approveBooking = (booking: Booking.Booking) => Effect.tryPromise({
+                    try: () => db.update(bookingTable)
+                        .set({ status: 'APPROVED', updatedAt: new Date().toISOString() })
+                        .where(eq(bookingTable.id, booking.id))
+                        .returning(),
+                    catch: cause => createDatabaseError('Could not approve booking', { cause })
+                }).pipe(
+                    Effect.flatMap(results =>
+                        results.length === 0
+                            ? Effect.fail(createNotFoundError())
+                            : Effect.succeed(results[0])
+                    )
+                )
+
+                const approve = (id: Booking.Id) => pipe(
+                    id,
+                    getById,
+                    Effect.flatMap(Option.match({
+                        onNone: () => Effect.fail(createNotFoundError()),
+                        onSome: (booking) => Effect.succeed(booking)
+                    })),
+                    Effect.map(Booking.decodeStored),
+                    Effect.flatMap(filterConflictsError),
+                    Effect.flatMap(approveBooking),
+                    Effect.map(Booking.decodeStored),
                 )
 
                 const deleteById = (id: Booking.Id) => pipe(
@@ -72,9 +139,12 @@ export class Bookings extends Context.Tag('Service/Bookings')<
                         Effect.bind('id', () => idGen.next),
                         Effect.let('createdAt', () => Booking.dateTime(new Date().toISOString())),
                         Effect.let('updatedAt', () => Booking.dateTime(new Date().toISOString())),
-                        Effect.let('status', () => Schema.decodeUnknownSync(Booking.bookingStatus)('PENDING')),
+                        Effect.let('status', always('PENDING')),
                         Effect.flatMap(submit),
                         Effect.catchTag('IdError', () => Effect.die('Could not generate ULID'))
+                    ),
+                    approve: (id: Booking.Id) => pipe(
+                        approve(id)
                     ),
                     deleteById: (id: Booking.Id) => pipe(
                         deleteById(id)
@@ -84,5 +154,3 @@ export class Bookings extends Context.Tag('Service/Bookings')<
         )
     )
 }
-
-const date = new Date().toISOString()

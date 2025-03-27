@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build:live",
     "build": "tsc -p .",
-    "build:live": "npx tsx --env-file=.env src/main.ts",
+    "build:live": "npx tsx watch --env-file=.env src/main.ts",
     "migrate:generate": "drizzle-kit generate",
     "migrate:push": "drizzle-kit push",
     "nuke": "rimraf booking_db.db && pnpm migrate:push"

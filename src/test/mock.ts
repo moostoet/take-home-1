@@ -1,5 +1,8 @@
 import * as Booking from "../booking/type";
 
+/**
+ * Mock variable used for testing the API implementatin.
+ */
 export const mockBookingWithNote: Booking.Booking = {
     id: Booking.id("1ff6aa8f-864c-4b6d-9e4b-51adefd53daf"),
     createdAt: Booking.dateTime("2023-10-12T10:30:00Z"),

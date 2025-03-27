@@ -10,6 +10,14 @@ export class IdError extends Error {
 
 export const createIdError = F.create(IdError)
 
+/**
+ * This service is used to generate unique IDs using ULID.
+ * ULID is similar to UUID to where they are globally unique.
+ * They are also 128-bit compatible with UUIDs.
+ * 
+ * ULIDs can be sorted as they use time data in their generation,
+ * and have a generally higher randomness.
+ */
 export class IdGenerator extends Context.Tag('IdGenerator')<
     IdGenerator,
     {

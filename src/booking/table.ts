@@ -2,6 +2,9 @@ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { Id, ISO8601DateTime } from "./type";
 import { InferSelectModel } from "drizzle-orm";
 
+/**
+ * SQLite table for the bookings.
+ */
 export const bookingTable = sqliteTable('bookings', {
     id: text('id').primaryKey(),
     createdAt: text('created_at').notNull(),
@@ -18,15 +21,4 @@ export const bookingTable = sqliteTable('bookings', {
     requestNote: text('request_note')
 })
 
-// type NullToUndefined<T> = {
-//     [K in keyof T]: T[K] extends null
-//     ? undefined
-//     : T[K] extends (infer U)[]
-//     ? NullToUndefined<U>[]
-//     : Exclude<T[K], null> | ([null] extends [T[K]] ? undefined : never);
-// };
-
-
 export type StoredBooking = InferSelectModel<typeof bookingTable>
-
-// export type StoredBooking = NullToUndefined<InferSelectModel<typeof bookingTable>>

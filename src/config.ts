@@ -9,6 +9,7 @@ export class ConfigService extends Context.Tag("Config")<
     }
 >() { }
 
+// Example of how variables like database URL's can be used across services.
 export const ConfigLive = Layer.succeed(
     ConfigService,
     ConfigService.of({

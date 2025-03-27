@@ -14,7 +14,11 @@ import { IdGenerator } from "./database/ids.js"
 
 const BookingAPILive = HttpApiBuilder.api(BookingAPI).pipe(Layer.provide(BookingLive))
 
-// Live server implementation - with Effect, you can create "Live" and "Test" versions of code easily to test and iterate.
+/** Live server implementation - with Effect, 
+ * you can create "Live" and "Test" versions of code easily to 
+ * test and iterate.
+ */
+
 const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
   Layer.provide(HttpApiScalar.layer()),
   Layer.provide(BookingAPILive),

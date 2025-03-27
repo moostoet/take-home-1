@@ -1,7 +1,6 @@
 import { Brand, Schema } from "effect";
 import { StoredBooking } from "./table";
 
-
 export const bookingStatus = Schema.Literal("PENDING", "APPROVED", "DENIED", "CANCELLED")
 
 export type bookingStatus = typeof bookingStatus.Type;
@@ -16,6 +15,10 @@ export type ISO8601DateTime = typeof ISO8601DateTime.Type;
 
 export const id = Brand.nominal<Id>();
 export const dateTime = Brand.nominal<ISO8601DateTime>();
+
+/**
+ * Effect's Schema is similar to Zod, where you can derive types from strictly defined schemas.
+ */
 
 export const Booking = Schema.Struct({
     id: Id,
@@ -55,11 +58,24 @@ export const storedBookingSchema = Schema.Struct({
 
 export type Booking = Schema.Schema.Type<typeof Booking>;
 
+/**
+ * Effect's Schema also comes with various handy functions to make offshoot schemas, e.g. omit() and pick()
+ */
+
 export const BookingRequest = Booking.omit("id", "createdAt", "updatedAt", "status");
 
 export type BookingRequest = Schema.Schema.Type<typeof BookingRequest>;
 
 export type StoredBookingSchema = Schema.Schema.Type<typeof storedBookingSchema>;
+
+export const ConflictingBooking = storedBookingSchema.pick('eventStart', 'eventEnd', 'eventLocationId', 'status')
+
+export type ConflictingBooking = Schema.Schema.Type<typeof ConflictingBooking>;
+
+/**
+ * Converts a Booking interface from the user to a more suitable interface for the Database
+ * using Schema.transform(...).
+ */
 
 const bookingFromStoredBooking = Schema.transform(
     storedBookingSchema,
