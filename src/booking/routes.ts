@@ -102,11 +102,9 @@ export const BookingLive =
             /* POST - Approve a single booking */
             .handle("approveBooking", (req) => Bookings.pipe(
                 Effect.flatMap(bookings => bookings.approve(req.path.id)),
-                Effect.catchTags({
-                    ConflictingBookingError: (err) => createConflictingBookingError(err),
-                    NotFound: () => createNotFoundError(),
-                    DatabaseError: () => createInternalServerError()
-                })
+                Effect.catchTag('DatabaseError', () =>
+                    Effect.fail(createInternalServerError())
+                )
             ))
 
             /* DELETE - Delete a single booking */

@@ -8,9 +8,10 @@ export class BookingNotFoundError extends Error {
 
 export class ConflictingBookingError extends Schema.TaggedError<ConflictingBookingError>()(
     "ConflictingBookingError",
-    {},
+    { message: Schema.String },
     HttpApiSchema.annotations({ status: 400 })
 ) { }
+
 
 export const createBookingNotFoundError = F.create(BookingNotFoundError);
 export const createConflictingBookingError = F.create(ConflictingBookingError)

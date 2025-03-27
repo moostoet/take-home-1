@@ -12,7 +12,6 @@ import { isConflicting } from "../database/query";
 import { ConflictingBookingError, createConflictingBookingError } from "./error";
 import { NotFound } from "@effect/platform/HttpApiError";
 
-
 /**
  * The bookings service responsible for CRUD operations on the bookings table in SQLite.
  */
@@ -65,7 +64,7 @@ export class Bookings extends Context.Tag('Service/Bookings')<
                     Effect.flatMap(conflicts =>
                         Array.isEmptyArray(conflicts)
                             ? Effect.succeed(result)
-                            : Effect.fail(createConflictingBookingError())
+                            : Effect.fail(createConflictingBookingError({ message: `There were conflicts with existing bookings. Please check your bookings and try again.` }))
                     )
                 )
 
